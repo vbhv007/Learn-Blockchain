@@ -1,0 +1,1 @@
+This is some content I found on [HackerNoon](https://hackernoon.com/learn-blockchains-by-building-one-117428612f46)
