@@ -1,6 +1,7 @@
 import hashlib
 import json
 from time import time
+from uuid import uuid4
 
 
 class Blockchain(object):
@@ -36,6 +37,20 @@ class Blockchain(object):
         })
         # returning index of the next block which will hold this transaction
         return self.last_block['index'] + 1
+
+    def proof_of_work(self, lastProof):
+        newProof = 0
+        while(self.vaild_proof(lastProof, newProof) is False):
+            newProof += 1
+
+        return newProof
+
+    @staticmethod
+    def valid_proof(lastProof, newProof):
+        guess = f'{lastProof}{newProof}'.encode()
+        guessHash = hashlib.sha256(guess).hexdigest()
+
+        return guessHash[:4] == "0000"
 
     # with the use of staticmethod, function can be detached from the class and the instance
     @staticmethod
