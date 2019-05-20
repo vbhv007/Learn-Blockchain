@@ -40,16 +40,18 @@ class Blockchain(object):
         # returning index of the next block which will hold this transaction
         return self.last_block['index'] + 1
 
-    def proof_of_work(self, lastProof):
+    def proof_of_work(self, lastBlock):
+        lastProof = lastBlock['proof']
+        lastHash = self.hash(lastBlock)
         newProof = 0
-        while(self.vaild_proof(lastProof, newProof) is False):
+        while self.vaild_proof(lastProof, newProof, lastHash) is False:
             newProof += 1
 
         return newProof
 
     @staticmethod
-    def valid_proof(lastProof, newProof):
-        guess = f'{lastProof}{newProof}'.encode()
+    def valid_proof(lastProof, newProof, lastHash):
+        guess = f'{lastProof}{newProof}{lastHash}'.encode()
         guessHash = hashlib.sha256(guess).hexdigest()
 
         return guessHash[:4] == "0000"
