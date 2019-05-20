@@ -3,7 +3,7 @@ import json
 from time import time
 from uuid import uuid4
 from textwrap import dedent
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 
 class Blockchain(object):
@@ -76,12 +76,43 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
-    return "Mining a new block"
+    lastBlock = blockchain.last_block
+    lastProof = lastBlock['proof']
+    newProof = blockchain.proof_of_work(lastProof)
+
+    blockchain.new_transaction(
+        sender="0",
+        recipient=nodeIdentifier,
+        amount=1,
+    )
+
+    previousHash = blockchain.hash(lastBlock)
+    block = blockchain.new_block(newProof, previousHash)
+
+    response = {
+        'message': 'New Block Forged',
+        'index': block['index'],
+        'transactions': block['transactions'],
+        'proof': block['proof'],
+        'previousHash': block['previousHash'],
+    }
+
+    return jsonify(response), 200
 
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transaction():
-    return "Adding a new transaction"
+    values = request.get_json()
+    required = ['sender', 'reciepient', 'amount']
+    if not all(k in values for k in required):
+        return "Missing values", 400
+
+    index = blockchain.new_transaction(
+        values['sender'], values['recipient'], values['amount'])
+    response = {
+        'message': f'Transaction will be added to Block {index}'
+    }
+    return jsonify(response), 201
 
 
 @app.route('/chain', methods=['GET'])
